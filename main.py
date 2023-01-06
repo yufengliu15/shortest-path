@@ -99,7 +99,7 @@ def resetGui(screen):
     guiReset.fill(BLACK)
     screen.blit(guiReset,(GRID_WIDTH, 0))
     
-# --------------------------- RESETS GUI ---------------------------------
+# --------------------------- RESETS MAZE --------------------------------
 def resetMaze(screen):
     characterMatrix = inputCharacterMatrix(screen)
     for y in range(len(characterMatrix)):
@@ -135,8 +135,8 @@ def init2dArray(input):
         _visited.append(tempVisited)
     return _visited
 
-# --------------------------- SEARCHING FUNCTION -------------------------
-def searchAlgorithm(screen):
+# --------------------------- SEARCHING ALGORITHM ------------------------
+def searchAlgorithm(screen, visualizationCheck):
     # Global variables
     ROWS = GRID_HEIGHT / BLOCKSIZE
     COLUMNS = GRID_WIDTH / BLOCKSIZE
@@ -155,6 +155,7 @@ def searchAlgorithm(screen):
     reachedEnd = False
     # rows x columns matrix to track whether a node has been visited
     visted = init2dArray(False)
+    order = []
     prev = init2dArray(None)
     
     # Solving
@@ -181,7 +182,11 @@ def searchAlgorithm(screen):
             rowQ.append(rr)
             columnQ.append(cc)
             visted[rr][cc] = True
-            drawBlock(cc*BLOCKSIZE, rr*BLOCKSIZE, screen, CYAN)
+            if visualizationCheck:
+                drawBlock(cc*BLOCKSIZE,rr*BLOCKSIZE,screen,CYAN)
+                drawGrid(screen)
+                pygame.display.update()
+                pygame.time.delay(15)
             nodesInNextLayer += 1
             prev[rr][cc] = (rows,columns)
         # accounts for number of steps to get to exit
@@ -230,7 +235,7 @@ def main():
                     pygame.time.delay(100)
                 # ----------- ALGORITHM RUNNING ------------------------------------
                 elif buttonPressed(mousePos,locationList,1):
-                    result = searchAlgorithm(displayWindow)
+                    result = searchAlgorithm(displayWindow, visualizationCheck)
                     if result == -1:
                         print ("Path to exit was blocked")
                     resetCheck = True
