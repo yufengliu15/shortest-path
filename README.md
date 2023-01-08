@@ -12,9 +12,10 @@ Running main.py will result in a pygame window to appear. Instructions can be se
 Cyan represents the algorithm attempting to solve, and orange represents the shortest path to the finish. 
 
 Examples of the program below:
-![Alt text](/images/Screen%20Shot%202023-01-07%20at%209.09.00%20PM.png)
-![Alt text](/images/Screen%20Shot%202023-01-07%20at%209.09.22%20PM.png)
-![Alt text](/images/Screen%20Shot%202023-01-07%20at%209.09.45%20PM.png)
+![Alt text](/images/Screen%20Shot%202023-01-07%20at%209.09.00%20PM.png "Normal Maze")
+![Alt text](/images/Screen%20Shot%202023-01-07%20at%209.09.22%20PM.png "Blocked Maze")
+![Alt text](/images/Screen%20Shot%202023-01-07%20at%209.09.45%20PM.png "Inaccessible area")
+![Alt text](/images/Screen%20Shot%202023-01-07%20at%209.12.59%20PM.png "Run screen")
 
 ## Sources
 Useful video for explaining Breadth First Search on a grid
