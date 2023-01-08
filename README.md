@@ -25,3 +25,6 @@ Run screen
 ## Sources
 Useful video for explaining Breadth First Search on a grid
 - https://www.youtube.com/watch?v=KiCBXu4P-2Y
+
+Useful video for explaining Dijkstra's Algorithm
+- https://www.youtube.com/watch?v=pVfj6mxhdMw
