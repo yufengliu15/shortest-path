@@ -1,4 +1,5 @@
 import pygame
+import math
 from collections import deque # queue
 
 # --------------------------- CONSTANTS (FEEL FREE TO CHANGE VALUES) ---------------------
@@ -8,11 +9,12 @@ RED = (255,0,0)
 GREEN = (0,255,0)
 BLUE = (0,0,255)
 CYAN = (0,255,255)
+ORANGE = (255,145,0)
 BLOCKSIZE = 20
-WINDOW_HEIGHT = 500
-WINDOW_WIDTH = 800
-GRID_WIDTH = 500
-GRID_HEIGHT = 500
+GRID_WIDTH = 500  
+GRID_HEIGHT = 500 
+WINDOW_HEIGHT = GRID_HEIGHT
+WINDOW_WIDTH = 800 
 
 # --------------------------- DRAWS USER GRID ----------------------------
 def drawGrid(screen):
@@ -104,7 +106,7 @@ def resetMaze(screen):
     characterMatrix = inputCharacterMatrix(screen)
     for y in range(len(characterMatrix)):
         for x in range(len(characterMatrix[y])):
-            if characterMatrix[y][x] == 'C':
+            if characterMatrix[y][x] == 'C' or characterMatrix[y][x] == 'L':
                 drawBlock(x*BLOCKSIZE,y*BLOCKSIZE,screen, BLACK)
     
 # --------------------------- CREATES A CHARACTER MATRIX OF THE GRID -----
@@ -123,9 +125,12 @@ def inputCharacterMatrix(screen):
                 tempMatrix.append('F')
             elif checkColour((x,y),screen, CYAN):
                 tempMatrix.append('C')
+            elif checkColour((x,y), screen, ORANGE):
+                tempMatrix.append('L')
         matrix.append(tempMatrix)
     return matrix
 
+# ---------------------- DATA STRUCTURES ---------------------------------
 def init2dArray(input):
     _visited = []
     for y in range(GRID_HEIGHT//BLOCKSIZE):
@@ -135,6 +140,28 @@ def init2dArray(input):
         _visited.append(tempVisited)
     return _visited
 
+def initUnvisited(screen):
+    unvisited = {}
+    for row in range(GRID_HEIGHT//BLOCKSIZE):
+        for col in range(GRID_WIDTH//BLOCKSIZE):
+            if inputCharacterMatrix(screen)[row][col] != 'W':
+                unvisited[str(row)+","+str(col)] = True
+    return unvisited
+
+def removeFromUnvisited(unvisited, row, col):
+    unvisited.pop(str(row)+","+str(col))
+    
+# ---------------------- CONSTRUCTS THE SHORTEST PATH --------------------
+def constructPath(prev, endCoords):
+    backwardsList = []
+    previousCoord = endCoords
+    while previousCoord != None:
+        reversedPreviousCoord = (previousCoord[1],previousCoord[0])
+        backwardsList.append(reversedPreviousCoord)
+        previousCoord = prev[previousCoord[0]][previousCoord[1]]
+    backwardsList.reverse()
+    return backwardsList
+    
 # --------------------------- SEARCHING ALGORITHM ------------------------
 def searchAlgorithm(screen, visualizationCheck):
     # Global variables
@@ -148,24 +175,42 @@ def searchAlgorithm(screen, visualizationCheck):
     columnDirection = [0,0,1,-1]
     
     # Variables used to track the number of steps taken
-    moveCount = 0
     nodesLeftInLayer = 1
     nodesInNextLayer = 0
     
     reachedEnd = False
     # rows x columns matrix to track whether a node has been visited
     visted = init2dArray(False)
-    order = []
+    unvisited = initUnvisited(screen)
     prev = init2dArray(None)
+    dist = init2dArray(999)
     
     # Solving
     rowQ.append(startR)
     columnQ.append(startC)
     visted[startR][startC] = True
-    while len(rowQ) > 0:
-        rows = rowQ.popleft()
-        columns = columnQ.popleft()
+    dist[startR][startC] = 0
+    
+    while len(unvisited) > 0 and len(rowQ) > 0:
+        rowQ.popleft()
+        columnQ.popleft()
+        # Find the smallest distance in the table
+        smallest = math.inf
+        for key in unvisited:
+            r, c = key.split(",")
+            r = int(r)
+            c = int(c)
+            if dist[r][c] < smallest:
+                smallest = dist[r][c]
+                rows = r
+                columns = c
+                
+        removeFromUnvisited(unvisited, rows, columns)
+        
+        # distance to neighbor
+        distance = dist[rows][columns] + 1
         if characterMatrix[rows][columns] == 'F':
+            endCoords = (rows,columns)
             reachedEnd = True
             break
         # explores the neighbouring cells
@@ -186,23 +231,23 @@ def searchAlgorithm(screen, visualizationCheck):
                 drawBlock(cc*BLOCKSIZE,rr*BLOCKSIZE,screen,CYAN)
                 drawGrid(screen)
                 pygame.display.update()
-                pygame.time.delay(15)
+                pygame.time.delay(10)
             nodesInNextLayer += 1
-            prev[rr][cc] = (rows,columns)
+            if dist[rr][cc] > distance:
+                dist[rr][cc] = distance
+                prev[rr][cc] = (rows,columns)
         # accounts for number of steps to get to exit
         nodesLeftInLayer -= 1
         if nodesLeftInLayer == 0:
             nodesLeftInLayer = nodesInNextLayer
             nodesInNextLayer = 0
-            moveCount += 1
     if reachedEnd:
-        #path = []
-        #for i in prev:
-        #    if i != None:
-        #        path.append()
-        return moveCount
+        return constructPath(prev,endCoords)
     return -1
 
+def drawShortestPath(screen, arrayShortestPath):
+    for i in range(len(arrayShortestPath)):
+        drawBlock(arrayShortestPath[i][0]*BLOCKSIZE, arrayShortestPath[i][1]*BLOCKSIZE,screen, ORANGE)
 
 # --------------------------- MAIN ---------------------------------------
 def main():
@@ -236,15 +281,24 @@ def main():
                 # ----------- ALGORITHM RUNNING ------------------------------------
                 elif buttonPressed(mousePos,locationList,1):
                     result = searchAlgorithm(displayWindow, visualizationCheck)
-                    if result == -1:
-                        print ("Path to exit was blocked")
                     resetCheck = True
                     resetGui(displayWindow)
                     locationList = drawGui(displayWindow,resetCheck)
+                    visualizationCheck = False
+                    
+                    if result == -1:
+                        text(displayWindow, "Path blocked", (GRID_WIDTH + 4 * BLOCKSIZE, GRID_HEIGHT // 2))
+                    else:
+                        drawShortestPath(displayWindow, result)
+                    
+                    # start and finish blocks
+                    drawBlock(0,0,displayWindow,GREEN)
+                    drawBlock(GRID_WIDTH - BLOCKSIZE,GRID_HEIGHT - BLOCKSIZE, displayWindow, BLUE)
                     drawGrid(displayWindow)
                     pygame.display.update()
                     pygame.time.delay(100)
                     
+                    # waits for user input
                     while resetCheck:
                         for event in pygame.event.get():
                             if (event.type == pygame.MOUSEBUTTONDOWN) and event.button == 1:
@@ -253,18 +307,17 @@ def main():
                                 if buttonPressed(mousePos,locationList,0):
                                     displayWindow.fill(BLACK)
                                     resetCheck = False
-                                    pygame.time.delay(100)
+                                    pygame.time.delay(400)
                                     break
                                 # if user clicks continue
                                 elif buttonPressed(mousePos,locationList,1):
                                     resetGui(displayWindow)
                                     resetCheck = False
-                                    pygame.time.delay(100)
+                                    pygame.time.delay(400)
                                     resetMaze(displayWindow)
                                     break
                             elif event.type == pygame.QUIT:
-                                pygame.quit()
-                    
+                                pygame.quit()         
         # if a right click occurs
         elif pygame.mouse.get_pressed(num_buttons=3) == (0,0,1):
             mousePos = pygame.mouse.get_pos()
