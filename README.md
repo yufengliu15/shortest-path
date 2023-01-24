@@ -1,5 +1,5 @@
 # shortest-path
-Create your own maze, and watch my algorithm attempt to find the shortest path. This was a passion project inspired by Tech With Tim. 
+Create your own maze, and watch my algorithm attempt to find the shortest path. 
 
 ## Objectives
 - Learn how to implement breadth first search in a grid environment
@@ -15,10 +15,13 @@ Examples of the program below:
 
 Normal Maze
 ![Alt text](/images/Screen%20Shot%202023-01-07%20at%209.09.00%20PM.png)
+
 Blocked Maze
 ![Alt text](/images/Screen%20Shot%202023-01-07%20at%209.09.22%20PM.png)
+
 Inaccessible area
 ![Alt text](/images/Screen%20Shot%202023-01-07%20at%209.09.45%20PM.png)
+
 Run screen
 ![Alt text](/images/Screen%20Shot%202023-01-07%20at%209.12.59%20PM.png )
 
